@@ -16,32 +16,27 @@ A complete personal portfolio website and blog, built as two separate applicatio
 
 ## Live links
 
-| | URL |
-|---|---|
-| **Front-end (React SPA)** | **https://capstone-cxd0621.vercel.app** |
-| **Back-end (API)** | **https://capstone-api-t1k5.onrender.com** |
+| | URL | Note |
+|---|---|---|
+| **Front-end (React SPA)** | **https://cxd0621-portfolio.onrender.com** | hosted on Render - reachable directly, no VPN needed |
+| Front-end mirror | https://capstone-cxd0621.vercel.app | hosted on Vercel (identical build) |
+| **Back-end (API)** | **https://capstone-api-t1k5.onrender.com** | health check: `/api/health` |
 
-Health check of the API: `GET https://capstone-api-t1k5.onrender.com/api/health`
+Both front ends are the same Vite build and talk to the same API, so either one shows the
+whole application. The Render deployment is listed first because the `*.vercel.app` domain is
+filtered by DNS in some networks: the name resolves to an unrelated IP address and the page
+only loads behind a VPN. The deployment itself is fine - Vercel reports *Ready / Production* -
+it is the domain that is blocked, not the application.
 
-### Network note (please read before opening the front-end link)
+Quick check that the API is alive without opening the website:
 
-The front end is hosted on **Vercel** and the API on **Render**. Both deployments are
-working, but the `*.vercel.app` domain is **filtered by DNS in some networks** (including
-mainland China): the name resolves to an unrelated IP address and the page will not load
-unless a VPN is used. This is a property of the domain, not of the application — the
-deployment itself reports **Ready / Production**.
+```
+GET https://capstone-api-t1k5.onrender.com/api/health     -> {"success":true,"status":"ok",...}
+GET https://capstone-api-t1k5.onrender.com/api/projects   -> the three project documents
+```
 
-The API on `*.onrender.com` is reachable **without a VPN**, and it can be verified directly:
-opening `/api/projects` returns the three project documents.
-
-If the front-end link cannot be opened on the reviewing machine, there are two ways to see
-the full application:
-
-1. **Run it locally** (two commands, see *Running the project locally* below) — the front end
-   then talks to the live Render API, so the data is exactly the same.
-2. **Deploy the front end to Render instead** — Render Static Sites are reachable without a
-   VPN. The steps are in *Deployment → Alternative: front end on Render* below; it takes
-   about five minutes and produces a `https://<name>.onrender.com` URL.
+> On the free Render tier an idle service is suspended; the first request after a pause can
+> take 30-60 seconds to wake up. This affects both the API and the static site.
 
 ---
 
