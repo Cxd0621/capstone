@@ -18,12 +18,30 @@ A complete personal portfolio website and blog, built as two separate applicatio
 
 | | URL |
 |---|---|
-| **Front-end (React SPA)** | _https://your-portfolio.vercel.app_ |
-| **Back-end (API)** | _https://your-api.onrender.com_ |
+| **Front-end (React SPA)** | **https://capstone-cxd0621.vercel.app** |
+| **Back-end (API)** | **https://capstone-api-t1k5.onrender.com** |
 
-> Replace the two placeholders above with the deployed URLs before submitting.
+Health check of the API: `GET https://capstone-api-t1k5.onrender.com/api/health`
 
-Health check of the API: `GET https://your-api.onrender.com/api/health`
+### Network note (please read before opening the front-end link)
+
+The front end is hosted on **Vercel** and the API on **Render**. Both deployments are
+working, but the `*.vercel.app` domain is **filtered by DNS in some networks** (including
+mainland China): the name resolves to an unrelated IP address and the page will not load
+unless a VPN is used. This is a property of the domain, not of the application — the
+deployment itself reports **Ready / Production**.
+
+The API on `*.onrender.com` is reachable **without a VPN**, and it can be verified directly:
+opening `/api/projects` returns the three project documents.
+
+If the front-end link cannot be opened on the reviewing machine, there are two ways to see
+the full application:
+
+1. **Run it locally** (two commands, see *Running the project locally* below) — the front end
+   then talks to the live Render API, so the data is exactly the same.
+2. **Deploy the front end to Render instead** — Render Static Sites are reachable without a
+   VPN. The steps are in *Deployment → Alternative: front end on Render* below; it takes
+   about five minutes and produces a `https://<name>.onrender.com` URL.
 
 ---
 
@@ -253,10 +271,23 @@ and the logged-in username.
 **Front end → Vercel**
 
 1. Import the repository, root directory `client`, framework preset **Vite**.
-2. Environment variable `VITE_API_URL=https://<your-api>.onrender.com/api`.
+2. Environment variable `VITE_API_URL=https://capstone-api-t1k5.onrender.com/api`.
 3. Deploy. `vercel.json` already rewrites every path to `index.html` so `/blog/:id` survives a
    page refresh.
-4. Set the back end's `CLIENT_URL` to the Vercel URL and redeploy the API so CORS matches.
+4. Set the back end's `CLIENT_URL` to the front-end URL and redeploy the API so CORS matches.
+
+**Alternative: front end on Render** (use this if `*.vercel.app` is blocked on the reviewing
+machine — `*.onrender.com` is not)
+
+1. Render → **New +** → **Static Site** → pick the same repository.
+2. Root Directory `client`, Build Command `npm install && npm run build`,
+   Publish Directory `dist`.
+3. Environment variable `VITE_API_URL=https://capstone-api-t1k5.onrender.com/api`.
+4. Create the site; the URL will be `https://<name>.onrender.com`.
+5. Update the API's `CLIENT_URL` to that URL and let it redeploy.
+
+Because Vite inlines `VITE_API_URL` at **build time**, any change to that value requires a
+new deployment (a page refresh alone is not enough).
 
 **Checklist after deploying:** open `/projects` and `/blog` (data arrives from the deployed
 API), log in with the demo account, create and delete a post from `/admin`, and post a
