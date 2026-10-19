@@ -1,0 +1,103 @@
+/* Global styles: design tokens, reset and shared typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --muted: #5b6b7f;
+  --line: #dfe6ee;
+  --brand: #0f766e;
+  --brand-soft: #ccfbf1;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --max: 1100px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 0.5rem; color: var(--ink); }
+h1 { font-size: clamp(1.9rem, 2.6vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.35rem, 1.8vw, 1.7rem); font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0 0 1rem; }
+small { color: var(--muted); }
+
+button, input, textarea { font: inherit; }
+
+img { max-width: 100%; display: block; }
+
+/* Shared form controls */
+label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; }
+
+input, textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+/* Shared button look */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.62rem 1.1rem;
+  border: none;
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover { background: #eef2f7; }
+
+.btn-danger { background: var(--danger); }
+.btn-small { padding: 0.4rem 0.7rem; font-size: 0.85rem; }
+
+/* Loading indicator and inline alerts (used by <Loader /> and <Alert />) */
+.loader { display: flex; align-items: center; gap: 0.6rem; color: var(--muted); padding: 1.5rem 0; }
+.loader-dot {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--brand);
+  animation: pulse 0.9s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+.alert { padding: 0.75rem 1rem; border-radius: 9px; font-size: 0.92rem; margin: 0.75rem 0; }
+.alert-error { background: var(--danger-soft); color: var(--danger); border: 1px solid #fecaca; }
+.alert-success { background: var(--brand-soft); color: #115e59; border: 1px solid #99f6e4; }

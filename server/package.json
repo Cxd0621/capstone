@@ -1,0 +1,23 @@
+{
+  "name": "capstone-server",
+  "version": "1.0.0",
+  "description": "Capstone Project API - portfolio & blog (Express + Mongoose + JWT)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["express", "mongodb", "mongoose", "jwt", "capstone"],
+  "author": "Chen Xiaoding",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.2"
+  }
+}

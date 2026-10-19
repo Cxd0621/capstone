@@ -1,0 +1,16 @@
+.wrap { min-height: 70vh; display: grid; place-items: center; padding: 3rem 1.25rem; }
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.form { display: grid; gap: 0.9rem; margin-top: 1.2rem; }
+.field { display: grid; gap: 0.25rem; }
+.hint { color: var(--muted); font-size: 0.82rem; }
+.switch { margin-top: 1.2rem; font-size: 0.9rem; color: var(--muted); }

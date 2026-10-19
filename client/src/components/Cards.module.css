@@ -1,0 +1,29 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.cardTitle { margin-bottom: 0.45rem; font-size: 1.05rem; }
+.cardTitle a { color: var(--ink); }
+.cardTitle a:hover { color: var(--brand); text-decoration: none; }
+
+.cardText { color: var(--muted); font-size: 0.93rem; flex: 1; margin-bottom: 1rem; }
+
+.cardActions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.cardLink { text-decoration: none; }
+.cardGhost { font-size: 0.86rem; color: var(--brand); }
+
+.cardMeta {
+  display: flex;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.7rem;
+}
