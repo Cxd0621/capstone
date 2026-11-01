@@ -227,7 +227,8 @@ answer **429** with a JSON message and `RateLimit-*` / `Retry-After` headers.
 | Route | Page | Data source |
 |---|---|---|
 | `/` | Home | `GET /projects`, `GET /blog` |
-| `/projects` | Projects gallery | `GET /projects` |
+| `/projects` | Projects gallery (Load more) | `GET /projects?page=&limit=` |
+| `/projects/:id` | One project, with its links | `GET /projects/:id` |
 | `/blog` | Blog list | `GET /blog` |
 | `/blog/:id` | Post detail + comments | `GET /blog/:id`, `POST /blog/:id/comments` |
 | `/contact` | Contact form | `POST /contact` |
@@ -243,7 +244,8 @@ header only shows the *Dashboard* link for an admin, and *Login / Register* / *L
 the username otherwise.
 
 `/projects` and `/blog` load six projects / four posts at a time and offer **Load more** until
-`page === pages`. A comment shows a **Delete** link to its author and to the post author; the
+`page === pages`. A project title opens `/projects/:id`, which works after a direct visit too;
+`/blog/:id` behaves the same way for posts. A comment shows a **Delete** link to its author and to the post author; the
 same rule is computed in the browser, so the button never appears for somebody the API would
 refuse.
 
@@ -285,7 +287,9 @@ without passing props. The choice is remembered in `localStorage`.
 **Front end**
 
 - Component-based architecture with reusable `Header`, `Footer`, `ProjectCard`,
-  `BlogPostCard`, `Loader`, `Alert` and `ProtectedRoute`.
+  `BlogPostCard`, `Loader`, `Alert`, `ThemeToggle` and `ProtectedRoute`.
+- Detail pages for both resources (`/projects/:id`, `/blog/:id`) with loading, error and
+  "not found" states plus a way back.
 - CSS Modules for scoped, responsive styling (grid layouts, mobile breakpoints).
 - `useState` for forms, loading and error state; `useEffect` for fetching.
 - Context API (`AuthContext`) keeps the token, the user and `login` / `register` / `logout`

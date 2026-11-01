@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './Cards.module.css';
 
 function ProjectCard({ project }) {
@@ -5,7 +6,9 @@ function ProjectCard({ project }) {
 
   return (
     <article className={styles.card}>
-      <h3 className={styles.cardTitle}>{title}</h3>
+      <h3 className={styles.cardTitle}>
+        <Link to={`/projects/${project._id}`}>{title}</Link>
+      </h3>
       <p className={styles.cardText}>{description}</p>
 
       <div className={styles.cardActions}>
