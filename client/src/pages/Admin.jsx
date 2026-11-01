@@ -40,14 +40,14 @@ function Admin() {
     setError('');
     try {
       // Runs the three "read" calls in parallel, each one on the public or protected endpoint
-      const [projectList, postList, messageList] = await Promise.all([
-        api.getProjects(),
-        api.getPosts(),
-        api.getMessages(token),
+      const [projectPage, postPage, messagePage] = await Promise.all([
+        api.getProjects({ limit: 50 }),
+        api.getPosts({ limit: 50 }),
+        api.getMessages(token, { limit: 50 }),
       ]);
-      setProjects(projectList);
-      setPosts(postList);
-      setMessages(messageList);
+      setProjects(projectPage.items);
+      setPosts(postPage.items);
+      setMessages(messagePage.items);
     } catch (loadError) {
       setError(loadError.message);
     } finally {

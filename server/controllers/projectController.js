@@ -1,13 +1,22 @@
 const Project = require('../models/Project');
 const ErrorHandler = require('../utils/ErrorHandler');
+const { pageOptions, pagedResult } = require('../utils/pageOptions');
 
-// GET /api/projects  (public)
+// GET /api/projects  (public) - paginated
 exports.getProjects = async (req, res, next) => {
   try {
-    const projects = await Project.find()
-      .populate('user', 'username')
-      .sort({ createdAt: -1 });
-    res.status(200).json(projects);
+    const { page, limit, skip } = pageOptions(req.query);
+
+    const [projects, total] = await Promise.all([
+      Project.find()
+        .populate('user', 'username')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Project.countDocuments(),
+    ]);
+
+    res.status(200).json(pagedResult(projects, total, page, limit));
   } catch (error) {
     next(error);
   }

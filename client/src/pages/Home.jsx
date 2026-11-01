@@ -19,11 +19,11 @@ function Home() {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([api.getProjects(), api.getPosts()])
-      .then(([projectList, postList]) => {
+    Promise.all([api.getProjects({ limit: 3 }), api.getPosts({ limit: 3 })])
+      .then(([projectPage, postPage]) => {
         if (cancelled) return;
-        setProjects(projectList);
-        setPosts(postList);
+        setProjects(projectPage.items);
+        setPosts(postPage.items);
       })
       .catch((error) => {
         if (!cancelled) setIsError(error.message);

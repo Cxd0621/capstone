@@ -1,14 +1,23 @@
 const BlogPost = require('../models/BlogPost');
 const Comment = require('../models/Comment');
 const ErrorHandler = require('../utils/ErrorHandler');
+const { pageOptions, pagedResult } = require('../utils/pageOptions');
 
-// GET /api/blog  (public) - author username populated
+// GET /api/blog  (public) - author username populated, paginated
 exports.getPosts = async (req, res, next) => {
   try {
-    const posts = await BlogPost.find()
-      .populate('author', 'username')
-      .sort({ createdAt: -1 });
-    res.status(200).json(posts);
+    const { page, limit, skip } = pageOptions(req.query);
+
+    const [posts, total] = await Promise.all([
+      BlogPost.find()
+        .populate('author', 'username')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      BlogPost.countDocuments(),
+    ]);
+
+    res.status(200).json(pagedResult(posts, total, page, limit));
   } catch (error) {
     next(error);
   }

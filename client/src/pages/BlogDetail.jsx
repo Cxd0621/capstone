@@ -18,6 +18,7 @@ function BlogDetail() {
   const [commentError, setCommentError] = useState('');
   const [commentSuccess, setCommentSuccess] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [deletingId, setDeletingId] = useState('');
 
   const loadComments = useCallback(async () => {
     const comments = await api.getComments(id);
@@ -59,6 +60,35 @@ function BlogDetail() {
       setCommentError(error.message);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  // The same rule the API enforces: the comment author or the post author.
+  const canDelete = (comment) => {
+    if (!isAuthenticated || !user) return false;
+    const wroteIt = comment.author?._id === user._id;
+    const ownsPost = post?.author?._id === user._id;
+    return wroteIt || ownsPost;
+  };
+
+  const handleDeleteComment = async (comment) => {
+    if (!window.confirm('Delete this comment?')) return;
+
+    setCommentError('');
+    setCommentSuccess('');
+    setDeletingId(comment._id);
+
+    try {
+      await api.deleteComment(id, comment._id, token);
+      setPost((current) => ({
+        ...current,
+        comments: (current.comments ?? []).filter((item) => item._id !== comment._id),
+      }));
+      setCommentSuccess('Comment deleted.');
+    } catch (error) {
+      setCommentError(error.message);
+    } finally {
+      setDeletingId('');
     }
   };
 
@@ -106,6 +136,16 @@ function BlogDetail() {
                 <span className={styles.commentDate}>
                   {new Date(comment.createdAt).toLocaleDateString('en-GB')}
                 </span>
+                {canDelete(comment) && (
+                  <button
+                    type="button"
+                    className={styles.commentDelete}
+                    disabled={deletingId === comment._id}
+                    onClick={() => handleDeleteComment(comment)}
+                  >
+                    {deletingId === comment._id ? 'Deleting...' : 'Delete'}
+                  </button>
+                )}
               </div>
               <p style={{ margin: 0 }}>{comment.body}</p>
             </li>

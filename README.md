@@ -149,6 +149,13 @@ The build output is `client/dist/`.
 Base URL: `http://localhost:5050/api` (or your deployed URL).
 “Bearer” means the request must send `Authorization: Bearer <token>`.
 
+**Pagination** — `GET /projects`, `GET /blog` and `GET /contact` accept `?page=` and
+`?limit=` (default 6, maximum 50) and answer with the same envelope:
+
+```json
+{ "items": [ ... ], "page": 1, "pages": 3, "total": 14, "limit": 6 }
+```
+
 ### Authentication
 
 | Method | Endpoint | Auth | Body | Purpose |
@@ -165,7 +172,7 @@ keeps a token. Every user response now includes `role` (`user` or `admin`).
 
 | Method | Endpoint | Auth | Body | Purpose |
 |---|---|---|---|---|
-| GET | `/projects` | public | – | All projects, newest first, author populated |
+| GET | `/projects` | public | – | Projects, newest first, author populated (`?page=&limit=`) |
 | GET | `/projects/:id` | public | – | One project |
 | POST | `/projects` | Bearer | `title`, `description`, `imageUrl?`, `repoUrl?`, `liveUrl?` | Create a project owned by the logged-in user |
 | PUT | `/projects/:id` | Bearer **+ owner** | same as POST | Update a project (403 if you are not the owner) |
@@ -175,7 +182,7 @@ keeps a token. Every user response now includes `role` (`user` or `admin`).
 
 | Method | Endpoint | Auth | Body | Purpose |
 |---|---|---|---|---|
-| GET | `/blog` | public | – | All posts with `author.username` populated |
+| GET | `/blog` | public | – | Posts with `author.username` populated (`?page=&limit=`) |
 | GET | `/blog/:id` | public | – | One post with its author and all comments |
 | POST | `/blog` | Bearer | `title`, `content` | Publish a post |
 | PUT | `/blog/:id` | Bearer **+ author** | `title?`, `content?` | Edit a post (403 if you are not the author) |
@@ -194,7 +201,7 @@ keeps a token. Every user response now includes `role` (`user` or `admin`).
 | Method | Endpoint | Auth | Body | Purpose |
 |---|---|---|---|---|
 | POST | `/contact` | public, max 5 per IP / 15 min | `name`, `email`, `message` | Save a message from the contact form |
-| GET | `/contact` | Bearer **+ admin** | – | List the messages (admin dashboard) |
+| GET | `/contact` | Bearer **+ admin** | – | Messages for the dashboard (`?page=&limit=`) |
 | DELETE | `/contact/:id` | Bearer **+ admin** | – | Delete a message |
 
 ### Utility
@@ -226,7 +233,7 @@ answer **429** with a JSON message and `RateLimit-*` / `Retry-After` headers.
 | `/contact` | Contact form | `POST /contact` |
 | `/login` | Login | `POST /users/login` |
 | `/register` | Register | `POST /users/register` |
-| `/admin` | Admin dashboard (**protected**) | projects + posts CRUD, `GET /contact` |
+| `/admin` | Admin dashboard (**protected + admin only**) | projects + posts CRUD, messages |
 
 `/admin` is wrapped in `<ProtectedRoute>`: while the saved token is being checked it shows a
 loader, and if there is no valid session it redirects to `/login` and remembers the page to
@@ -234,6 +241,15 @@ return to. Inside the page a second check looks at `role`: a normal reader sees 
 explanatory message and no write requests are sent, while the `admin` gets the tabs. The
 header only shows the *Dashboard* link for an admin, and *Login / Register* / *Logout* plus
 the username otherwise.
+
+`/projects` and `/blog` load six projects / four posts at a time and offer **Load more** until
+`page === pages`. A comment shows a **Delete** link to its author and to the post author; the
+same rule is computed in the browser, so the button never appears for somebody the API would
+refuse.
+
+The header also has a theme button. `ThemeProvider` keeps `light` / `dark` in React Context,
+writes `<html data-theme="...">`, and the CSS variables do the rest, so every page follows
+without passing props. The choice is remembered in `localStorage`.
 
 ---
 
@@ -253,6 +269,8 @@ the username otherwise.
   management are the owner's, while any registered reader may comment.
 - `populate()` is used for `Project.user`, `BlogPost.author`, `Comment.author` and the
   comments of a post.
+- List endpoints are paginated with a shared `utils/pageOptions.js` helper (`?page=&limit=`,
+  maximum 50) and return `items` plus `page` / `pages` / `total`.
 - Central error handler (CastError → 400, ValidationError → 400, duplicate key → 400,
   everything else → 500) and a 404 handler.
 - `helmet` for secure headers, `cors` restricted to `CLIENT_URL`, `dotenv` for secrets.
@@ -272,8 +290,11 @@ the username otherwise.
 - `useState` for forms, loading and error state; `useEffect` for fetching.
 - Context API (`AuthContext`) keeps the token, the user and `login` / `register` / `logout`
   and restores the session from `localStorage` on refresh.
+- A second context (`ThemeContext`) owns the colour theme for the whole app; the header button
+  and the page styles both read it with `useContext`.
 - Admin dashboard sends `Authorization: Bearer <token>` on every write and supports full
-  create / edit / delete for both projects and blog posts, plus a read-only messages panel.
+  create / edit / delete for both projects and blog posts, plus a read-only messages panel
+  and a comment **Delete** action on the blog detail page.
 
 ---
 

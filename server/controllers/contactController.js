@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const ErrorHandler = require('../utils/ErrorHandler');
+const { pageOptions, pagedResult } = require('../utils/pageOptions');
 
 // POST /api/contact  (public) - the portfolio contact form
 exports.createMessage = async (req, res, next) => {
@@ -17,11 +18,17 @@ exports.createMessage = async (req, res, next) => {
   }
 };
 
-// GET /api/contact  (protected) - the admin reads the messages
+// GET /api/contact  (protected) - the admin reads the messages, paginated
 exports.getMessages = async (req, res, next) => {
   try {
-    const messages = await Message.find().sort({ createdAt: -1 });
-    res.status(200).json(messages);
+    const { page, limit, skip } = pageOptions(req.query);
+
+    const [messages, total] = await Promise.all([
+      Message.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Message.countDocuments(),
+    ]);
+
+    res.status(200).json(pagedResult(messages, total, page, limit));
   } catch (error) {
     next(error);
   }

@@ -16,6 +16,22 @@
   --max: 1100px;
 }
 
+/* Dark theme: the same tokens, so every component follows automatically.
+   The value is applied by ThemeProvider through <html data-theme="...">. */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --surface: #121c2e;
+  --ink: #e6edf7;
+  --muted: #9fb0c5;
+  --line: #25344a;
+  --brand: #2dd4bf;
+  --brand-soft: #103c38;
+  --danger: #fca5a5;
+  --danger-soft: #3a1518;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root { min-height: 100%; }
@@ -51,7 +67,7 @@ input, textarea {
   padding: 0.65rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -85,9 +101,12 @@ input:focus, textarea:focus {
   color: var(--ink);
   border: 1px solid var(--line);
 }
-.btn-ghost:hover { background: #eef2f7; }
+.btn-ghost:hover { background: var(--line); }
 
 .btn-danger { background: var(--danger); }
+html[data-theme='dark'] .btn { color: #04231d; }
+html[data-theme='dark'] .btn-ghost { color: var(--ink); }
+html[data-theme='dark'] .btn-danger { color: #3a1518; }
 .btn-small { padding: 0.4rem 0.7rem; font-size: 0.85rem; }
 
 /* Loading indicator and inline alerts (used by <Loader /> and <Alert />) */
@@ -99,5 +118,5 @@ input:focus, textarea:focus {
 @keyframes pulse { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
 
 .alert { padding: 0.75rem 1rem; border-radius: 9px; font-size: 0.92rem; margin: 0.75rem 0; }
-.alert-error { background: var(--danger-soft); color: var(--danger); border: 1px solid #fecaca; }
-.alert-success { background: var(--brand-soft); color: #115e59; border: 1px solid #99f6e4; }
+.alert-error { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--line); }
+.alert-success { background: var(--brand-soft); color: var(--brand); border: 1px solid var(--line); }

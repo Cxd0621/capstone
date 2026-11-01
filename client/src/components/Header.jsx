@@ -1,5 +1,6 @@
 // Auth-aware header: Login/Register, or Dashboard/Logout once signed in.
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle.jsx';
 import { useAuth } from '../context/AuthContext';
 import styles from './Layout.module.css';
 
@@ -38,6 +39,8 @@ function Header() {
         </nav>
 
         <div className={styles.actions}>
+          <ThemeToggle />
+
           {isAuthenticated ? (
             <>
               {isAdmin && (

@@ -2,6 +2,16 @@
 // The URL comes from VITE_API_URL so the deployed build can point at the deployed server.
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5050/api').replace(/\/$/, '');
 
+// Builds "?page=2&limit=6" for the paginated list endpoints (omitted when empty).
+function query(params = {}) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') search.set(key, value);
+  });
+  const text = search.toString();
+  return text ? `?${text}` : '';
+}
+
 async function request(path, { method = 'GET', body, token } = {}) {
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -36,14 +46,14 @@ export const api = {
   me: (token) => request('/users/me', { token }),
 
   // projects (public reads, protected writes)
-  getProjects: () => request('/projects'),
+  getProjects: (params) => request('/projects' + query(params)),
   getProject: (id) => request(`/projects/${id}`),
   createProject: (body, token) => request('/projects', { method: 'POST', body, token }),
   updateProject: (id, body, token) => request(`/projects/${id}`, { method: 'PUT', body, token }),
   deleteProject: (id, token) => request(`/projects/${id}`, { method: 'DELETE', token }),
 
   // blog posts
-  getPosts: () => request('/blog'),
+  getPosts: (params) => request('/blog' + query(params)),
   getPost: (id) => request(`/blog/${id}`),
   createPost: (body, token) => request('/blog', { method: 'POST', body, token }),
   updatePost: (id, body, token) => request(`/blog/${id}`, { method: 'PUT', body, token }),
@@ -53,10 +63,12 @@ export const api = {
   getComments: (postId) => request(`/blog/${postId}/comments`),
   createComment: (postId, body, token) =>
     request(`/blog/${postId}/comments`, { method: 'POST', body, token }),
+  deleteComment: (postId, commentId, token) =>
+    request(`/blog/${postId}/comments/${commentId}`, { method: 'DELETE', token }),
 
   // contact messages
   sendMessage: (body) => request('/contact', { method: 'POST', body }),
-  getMessages: (token) => request('/contact', { token }),
+  getMessages: (token, params) => request('/contact' + query(params), { token }),
   deleteMessage: (id, token) => request(`/contact/${id}`, { method: 'DELETE', token }),
 };
 

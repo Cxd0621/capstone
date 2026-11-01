@@ -40,6 +40,9 @@
 .active { background: #1e293b; color: #fff; }
 
 .actions { display: flex; align-items: center; gap: 0.6rem; }
+/* Ghost buttons sit on the dark header, so they need light text in both themes */
+.actions :global(.btn-ghost) { color: #e2e8f0; border-color: #334155; }
+.actions :global(.btn-ghost:hover) { background: #1e293b; color: #fff; }
 .user { color: #94a3b8; font-size: 0.76rem; }
 .loginLink { color: #cbd5e1; font-size: 0.9rem; }
 
