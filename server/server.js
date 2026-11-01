@@ -57,8 +57,17 @@ app.use(errorHandler);
 const start = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
-      console.log(`API running on http://localhost:${PORT}/api/health`);
+
+    // Bind to every IPv4 interface on purpose: a hosting platform scans
+    // 0.0.0.0:<PORT> to decide whether the service is healthy. Listening
+    // without a host can end up IPv6-only on some containers.
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`API listening on 0.0.0.0:${PORT} (health: /api/health)`);
+    });
+
+    server.on('error', (error) => {
+      console.error(`Failed to listen on port ${PORT}: ${error.message}`);
+      process.exit(1);
     });
   } catch (error) {
     console.error(`Failed to start: ${error.message}`);
