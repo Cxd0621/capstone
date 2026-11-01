@@ -44,29 +44,42 @@ exports.createProject = async (req, res, next) => {
   }
 };
 
-// PUT /api/projects/:id  (protected)
+// PUT /api/projects/:id  (protected + only the owner)
 exports.updateProject = async (req, res, next) => {
   try {
-    const { title, description, imageUrl, repoUrl, liveUrl } = req.body;
-
-    const project = await Project.findByIdAndUpdate(
-      req.params.id,
-      { title, description, imageUrl, repoUrl, liveUrl },
-      { new: true, runValidators: true }
-    );
-
+    const project = await Project.findById(req.params.id);
     if (!project) return next(new ErrorHandler('Project not found', 404));
-    res.status(200).json(project);
+
+    // Authorization: a signed-in visitor must not rewrite somebody else's project
+    if (project.user.toString() !== req.user._id.toString()) {
+      return next(new ErrorHandler('You can only edit your own projects', 403));
+    }
+
+    const { title, description, imageUrl, repoUrl, liveUrl } = req.body;
+    project.title = title ?? project.title;
+    project.description = description ?? project.description;
+    project.imageUrl = imageUrl ?? project.imageUrl;
+    project.repoUrl = repoUrl ?? project.repoUrl;
+    project.liveUrl = liveUrl ?? project.liveUrl;
+
+    await project.save();
+    res.status(200).json(await project.populate('user', 'username'));
   } catch (error) {
     next(error);
   }
 };
 
-// DELETE /api/projects/:id  (protected)
+// DELETE /api/projects/:id  (protected + only the owner)
 exports.deleteProject = async (req, res, next) => {
   try {
-    const project = await Project.findByIdAndDelete(req.params.id);
+    const project = await Project.findById(req.params.id);
     if (!project) return next(new ErrorHandler('Project not found', 404));
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return next(new ErrorHandler('You can only delete your own projects', 403));
+    }
+
+    await project.deleteOne();
     res.status(200).json({ success: true, message: 'Project deleted', _id: project._id });
   } catch (error) {
     next(error);

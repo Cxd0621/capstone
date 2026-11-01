@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { api } from '../api/client';
 import Alert from '../components/Alert';
@@ -10,7 +11,7 @@ const EMPTY_PROJECT = { title: '', description: '', repoUrl: '', liveUrl: '', im
 const EMPTY_POST = { title: '', content: '' };
 
 function Admin() {
-  const { token, user } = useAuth();
+  const { token, user, isAdmin } = useAuth();
 
   const [tab, setTab] = useState('projects');
   const [projects, setProjects] = useState([]);
@@ -28,6 +29,13 @@ function Admin() {
   const [editingPost, setEditingPost] = useState(null);
 
   const loadEverything = useCallback(async () => {
+    // The inbox and the write buttons are admin-only on the server too; a normal
+    // reader never starts these requests.
+    if (!isAdmin) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     try {
@@ -45,7 +53,7 @@ function Admin() {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, isAdmin]);
 
   useEffect(() => {
     loadEverything();
@@ -167,6 +175,23 @@ function Admin() {
   };
 
   // ---------------------------------------------------------------- render
+  if (!isAdmin) {
+    return (
+      <div className={styles.page}>
+        <h1>Admin dashboard</h1>
+        <Alert>
+          This dashboard belongs to the site owner. Your account is a normal reader: you can
+          comment on posts, but you cannot manage content or read the contact inbox.
+        </Alert>
+        <p>
+          <Link className="btn btn-small" to="/blog">
+            Back to the blog
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
   const tabClass = (name) => (tab === name ? `${styles.tab} ${styles.tabActive}` : styles.tab);
 
   return (

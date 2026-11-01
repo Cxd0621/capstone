@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import styles from './Layout.module.css';
 
 function Header() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -40,9 +40,11 @@ function Header() {
         <div className={styles.actions}>
           {isAuthenticated ? (
             <>
-              <Link to="/admin" className="btn btn-small">
-                Dashboard
-              </Link>
+              {isAdmin && (
+                <Link to="/admin" className="btn btn-small">
+                  Dashboard
+                </Link>
+              )}
               <button type="button" className="btn btn-small btn-ghost" onClick={handleLogout}>
                 Logout
               </button>

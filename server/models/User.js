@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    // Public registration always creates a "user"; only the owner promotes an
+    // account to "admin" in the database, so no route can grant itself rights.
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
   },
   { timestamps: true }
 );

@@ -18,15 +18,25 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ---------------------------------------------------------------- security
+// Hosts such as Render put one proxy in front of the app. Trusting that hop is
+// what lets req.ip hold the real visitor, which the rate limiters depend on.
+// Set TRUST_PROXY=0 only when the API is reached directly (no proxy at all).
+if (process.env.TRUST_PROXY !== '0') {
+  app.set('trust proxy', 1);
+}
+
 // helmet sets safe HTTP headers; cors lets the React app (on another origin) call us
 app.use(helmet());
 app.use(
   cors({
     origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
-app.use(express.json());
+// A portfolio post or a contact message never needs more than a few KB.
+app.use(express.json({ limit: '32kb' }));
 
 // ------------------------------------------------------------------ health
 app.get('/api/health', (req, res) =>

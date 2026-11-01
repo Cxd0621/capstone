@@ -19,7 +19,8 @@ exports.register = async (req, res, next) => {
       return next(new ErrorHandler('A user with that email or username already exists', 400));
     }
 
-    // The pre-save hook hashes the password before it reaches the database
+    // The pre-save hook hashes the password before it reaches the database.
+    // The role is never taken from the request body: registration starts as "user".
     const user = await User.create({ username, email, password });
 
     res.status(201).json({
@@ -27,6 +28,7 @@ exports.register = async (req, res, next) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -55,6 +57,7 @@ exports.login = async (req, res, next) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -66,6 +69,11 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res) => {
   res.status(200).json({
     success: true,
-    user: { _id: req.user._id, username: req.user.username, email: req.user.email },
+    user: {
+      _id: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+    },
   });
 };

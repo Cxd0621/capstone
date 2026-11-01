@@ -45,10 +45,13 @@ GET https://capstone-api-t1k5.onrender.com/api/projects   -> the three project d
 The database already contains a few sample projects, two blog posts, comments and a
 contact message, so every page has something to show.
 
-| Role | Email | Password |
-|---|---|---|
-| Author / admin | `admin@portfolio.dev` | `Admin123456` |
-| Regular user (can comment) | `visitor@example.com` | `Visitor123` |
+| Role in the API | Email | Password | What it can do |
+|---|---|---|---|
+| `admin` (site owner) | `admin@portfolio.dev` | `Admin123456` | Manage projects and posts, read and delete contact messages |
+| `user` (reader) | `visitor@example.com` | `Visitor123` | Read everything public and write comments |
+
+Public registration always creates a `user`. The `role` field is only changed by the owner
+in the database, so no route can promote an account to `admin`.
 
 ---
 
@@ -154,6 +157,10 @@ Base URL: `http://localhost:5050/api` (or your deployed URL).
 | POST | `/users/login` | public | `email`, `password` | Verify the credentials and return a JWT |
 | GET | `/users/me` | Bearer | – | Return the owner of the token (used to restore a session) |
 
+`register` and `login` share one allowance of **10 attempts per IP per 15 minutes** and the
+whole `/users` router answers with `Cache-Control: no-store`, so a browser or proxy never
+keeps a token. Every user response now includes `role` (`user` or `admin`).
+
 ### Projects
 
 | Method | Endpoint | Auth | Body | Purpose |
@@ -161,8 +168,8 @@ Base URL: `http://localhost:5050/api` (or your deployed URL).
 | GET | `/projects` | public | – | All projects, newest first, author populated |
 | GET | `/projects/:id` | public | – | One project |
 | POST | `/projects` | Bearer | `title`, `description`, `imageUrl?`, `repoUrl?`, `liveUrl?` | Create a project owned by the logged-in user |
-| PUT | `/projects/:id` | Bearer | same as POST | Update a project |
-| DELETE | `/projects/:id` | Bearer | – | Delete a project |
+| PUT | `/projects/:id` | Bearer **+ owner** | same as POST | Update a project (403 if you are not the owner) |
+| DELETE | `/projects/:id` | Bearer **+ owner** | – | Delete a project (403 if you are not the owner) |
 
 ### Blog
 
@@ -180,14 +187,15 @@ Base URL: `http://localhost:5050/api` (or your deployed URL).
 |---|---|---|---|---|
 | GET | `/blog/:postId/comments` | public | – | All comments of one post |
 | POST | `/blog/:postId/comments` | Bearer | `body` | Add a comment as the logged-in user |
+| DELETE | `/blog/:postId/comments/:commentId` | Bearer **+ comment or post author** | – | Delete a comment (403 otherwise, 404 when it does not belong to that post) |
 
 ### Contact
 
 | Method | Endpoint | Auth | Body | Purpose |
 |---|---|---|---|---|
-| POST | `/contact` | public | `name`, `email`, `message` | Save a message from the contact form |
-| GET | `/contact` | Bearer | – | List the messages (admin dashboard) |
-| DELETE | `/contact/:id` | Bearer | – | Delete a message |
+| POST | `/contact` | public, max 5 per IP / 15 min | `name`, `email`, `message` | Save a message from the contact form |
+| GET | `/contact` | Bearer **+ admin** | – | List the messages (admin dashboard) |
+| DELETE | `/contact/:id` | Bearer **+ admin** | – | Delete a message |
 
 ### Utility
 
@@ -200,6 +208,10 @@ Base URL: `http://localhost:5050/api` (or your deployed URL).
 ```json
 { "success": false, "status": 401, "message": "Not authorized, no token provided" }
 ```
+
+Body parsing errors use the same shape: **400** `Send valid JSON.` for broken JSON and
+**413** `The request body is too large.` when the body is over 32 KB. Both rate limiters
+answer **429** with a JSON message and `RateLimit-*` / `Retry-After` headers.
 
 ---
 
@@ -218,8 +230,10 @@ Base URL: `http://localhost:5050/api` (or your deployed URL).
 
 `/admin` is wrapped in `<ProtectedRoute>`: while the saved token is being checked it shows a
 loader, and if there is no valid session it redirects to `/login` and remembers the page to
-return to. The header is auth-aware — it shows *Login / Register* or *Dashboard / Logout*
-and the logged-in username.
+return to. Inside the page a second check looks at `role`: a normal reader sees an
+explanatory message and no write requests are sent, while the `admin` gets the tabs. The
+header only shows the *Dashboard* link for an admin, and *Login / Register* / *Logout* plus
+the username otherwise.
 
 ---
 
@@ -233,12 +247,22 @@ and the logged-in username.
   (`select: false`); login compares with `bcrypt.compare`.
 - JWT signed with `JWT_SECRET`, valid for 30 days; the `protect` middleware verifies it and
   loads `req.user`.
-- Blog update / delete check that `req.user._id` is the post author (403 otherwise).
+- Blog and project update / delete check that `req.user._id` owns the record (403 otherwise);
+  comments can be removed by the comment author or the post author.
+- Two roles (`user`, `admin`) with an `adminOnly` middleware: the contact inbox and content
+  management are the owner's, while any registered reader may comment.
 - `populate()` is used for `Project.user`, `BlogPost.author`, `Comment.author` and the
   comments of a post.
 - Central error handler (CastError → 400, ValidationError → 400, duplicate key → 400,
   everything else → 500) and a 404 handler.
-- `helmet` for secure headers, `cors` for the React origin, `dotenv` for secrets.
+- `helmet` for secure headers, `cors` restricted to `CLIENT_URL`, `dotenv` for secrets.
+- `express.json({ limit: '32kb' })` so an oversized body is rejected with 413 before any
+  controller runs.
+- `express-rate-limit` in memory: 10 account attempts and 5 contact messages per IP per
+  15 minutes, both answering 429.
+- `trust proxy` is on by default for hosting platforms, so `req.ip` is the visitor and not
+  the Render proxy; `TRUST_PROXY=0` disables it for a direct local connection.
+- `/api/users` responses are `Cache-Control: no-store`.
 
 **Front end**
 
@@ -259,7 +283,8 @@ and the logged-in username.
 
 1. New → Web Service → connect the repository, root directory `server`.
 2. Build command `npm install`, start command `npm start`.
-3. Environment variables: `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL).
+3. Environment variables: `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your front-end URL; a
+   comma separated list also works) and `TRUST_PROXY=1` so the rate limits see the real IP.
 4. Render provides `https://<name>.onrender.com` — check `/api/health`.
 5. In MongoDB Atlas → Network Access, allow `0.0.0.0/0` so Render can connect.
 

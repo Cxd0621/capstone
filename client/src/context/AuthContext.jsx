@@ -47,7 +47,12 @@ export function AuthProvider({ children }) {
   const applySession = useCallback((data) => {
     localStorage.setItem(STORAGE_KEY, data.token);
     setToken(data.token);
-    setUser({ _id: data._id, username: data.username, email: data.email });
+    setUser({
+      _id: data._id,
+      username: data.username,
+      email: data.email,
+      role: data.role,
+    });
   }, []);
 
   const login = useCallback(
@@ -79,6 +84,7 @@ export function AuthProvider({ children }) {
     user,
     ready,
     isAuthenticated: Boolean(user),
+    isAdmin: user?.role === 'admin',
     login,
     register,
     logout,

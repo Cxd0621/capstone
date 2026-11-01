@@ -29,4 +29,13 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// Runs after protect: only the portfolio owner (role = "admin") may read the
+// contact inbox or manage content on somebody else's behalf.
+const adminOnly = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return next(new ErrorHandler('Admin access is required', 403));
+  }
+  next();
+};
+
+module.exports = { protect, adminOnly };
