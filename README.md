@@ -174,9 +174,9 @@ keeps a token. Every user response now includes `role` (`user` or `admin`).
 |---|---|---|---|---|
 | GET | `/projects` | public | – | Projects, newest first, author populated (`?page=&limit=`) |
 | GET | `/projects/:id` | public | – | One project |
-| POST | `/projects` | Bearer | `title`, `description`, `imageUrl?`, `repoUrl?`, `liveUrl?` | Create a project owned by the logged-in user |
-| PUT | `/projects/:id` | Bearer **+ owner** | same as POST | Update a project (403 if you are not the owner) |
-| DELETE | `/projects/:id` | Bearer **+ owner** | – | Delete a project (403 if you are not the owner) |
+| POST | `/projects` | Bearer **+ admin** | `title`, `description`, `imageUrl?`, `repoUrl?`, `liveUrl?` | Create a project (403 for a reader) |
+| PUT | `/projects/:id` | Bearer **+ admin** | same as POST | Update a project (403 for a reader) |
+| DELETE | `/projects/:id` | Bearer **+ admin** | – | Delete a project (403 for a reader) |
 
 ### Blog
 
@@ -184,7 +184,7 @@ keeps a token. Every user response now includes `role` (`user` or `admin`).
 |---|---|---|---|---|
 | GET | `/blog` | public | – | Posts with `author.username` populated (`?page=&limit=`) |
 | GET | `/blog/:id` | public | – | One post with its author and all comments |
-| POST | `/blog` | Bearer | `title`, `content` | Publish a post |
+| POST | `/blog` | Bearer **+ admin** | `title`, `content` | Publish a post (403 for a reader) |
 | PUT | `/blog/:id` | Bearer **+ author** | `title?`, `content?` | Edit a post (403 if you are not the author) |
 | DELETE | `/blog/:id` | Bearer **+ author** | – | Delete a post and its comments (403 if not the author) |
 

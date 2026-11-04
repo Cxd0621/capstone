@@ -6,9 +6,13 @@ const {
   updateProject,
   deleteProject,
 } = require('../controllers/projectController');
-const { protect } = require('../middleware/auth');
+const { protect, adminOnly } = require('../middleware/auth');
 
-router.route('/').get(getProjects).post(protect, createProject);
-router.route('/:id').get(getProject).put(protect, updateProject).delete(protect, deleteProject);
+router.route('/').get(getProjects).post(protect, adminOnly, createProject);
+router
+  .route('/:id')
+  .get(getProject)
+  .put(protect, adminOnly, updateProject)
+  .delete(protect, adminOnly, deleteProject);
 
 module.exports = router;

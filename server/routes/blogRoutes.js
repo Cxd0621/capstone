@@ -11,7 +11,7 @@ const {
   createComment,
   deleteComment,
 } = require('../controllers/commentController');
-const { protect } = require('../middleware/auth');
+const { protect, adminOnly } = require('../middleware/auth');
 
 // Comments belong to a post, so they live under /api/blog/:postId/comments
 router.route('/:postId/comments').get(getComments).post(protect, createComment);
@@ -20,7 +20,7 @@ router
   .delete(protect, deleteComment);
 
 // Posts
-router.route('/').get(getPosts).post(protect, createPost);
+router.route('/').get(getPosts).post(protect, adminOnly, createPost);
 router.route('/:id').get(getPost).put(protect, updatePost).delete(protect, deletePost);
 
 module.exports = router;
